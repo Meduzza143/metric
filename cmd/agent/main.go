@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"math/rand"
@@ -18,8 +19,8 @@ type MemStruct struct {
 
 var MemStorage = make(map[string]MemStruct)
 
-const pollInterval = 2
-const reportInterval = 10
+var pollInterval time.Duration
+var reportInterval time.Duration
 
 func uintToStr(value uint64) string {
 	return strconv.FormatUint(value, 10)
@@ -72,9 +73,7 @@ func poller() {
 
 		MemStorage["PollCount"] = MemStruct{"counter", uintToStr(i)}
 
-		// senders.SendData(uintToStr(mem.Alloc), "Alloc", "gauge")
-
-		time.Sleep(pollInterval * time.Second)
+		time.Sleep(pollInterval)
 	}
 }
 
@@ -87,13 +86,18 @@ func sender() {
 				log.Fatalf("status: %d", status)
 			}
 		}
-
-		time.Sleep(reportInterval * time.Second)
+		time.Sleep(reportInterval)
 	}
 }
 
 func main() {
 	fmt.Println("client_start")
+	senders.APIURL = "http://" + *flag.String("a", "localhost:8080", "endpont address:port")
+	reportInterval = *flag.Duration("r", 10*time.Second, "report interval in seconds")
+	pollInterval = *flag.Duration("p", 2*time.Second, "poll interval in seconds")
+
+	flag.Parse()
+
 	go poller()
 	go sender()
 	for {
