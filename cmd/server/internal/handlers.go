@@ -1,68 +1,63 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
+
+	"github.com/gorilla/mux"
 )
+
+type value interface {
+	GetValue() interface{}
+}
+type int64Var struct{ value int64 }
+type float64Var struct{ value float64 }
+type stringVar struct{ value string }
+
+func (v int64Var) GetValue() interface{} {
+	return v.value
+}
+func (v float64Var) GetValue() interface{} {
+	return v.value
+}
+func (v stringVar) GetValue() interface{} {
+	return v.value
+}
 
 type MemStruct struct {
 	metricType   string
 	gaugeValue   float64
 	counterValue int64
-	// gauge   float64 //значение должно замещать
-	// counter int64   //значение должно суммироваться
 }
 
-//  func updater (s string, k string, t interface{}){
-// 	switch t.(type) {
-// 		case string
-
-//  }
-
-// func (g float64) updater(s string, k string) {
-// 	currValue, err := strconv.ParseFloat(s, 64)
-// 	if err == nil {
-// 		MemStorage[k].value = currValue
-// 	}
-// }
-
-/*
-	This variable m is a map of string keys to int values:
-
-	var m map[string]int
-
-*/
-
-// var MemStorage map[string]MemStruct //Name - key
 var MemStorage = make(map[string]MemStruct)
-
-//m := make(map[string]float64)
 
 // //http://<АДРЕС_СЕРВЕРА>/update/<ТИП_МЕТРИКИ>/<ИМЯ_МЕТРИКИ>/<ЗНАЧЕНИЕ_МЕТРИКИ>
 func UpdateHandle(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("content-type", "text/plain")
-	reqPar := strings.Split(strings.TrimPrefix(req.RequestURI, "/update/"), "/")
+	vars := mux.Vars(req)
+	fmt.Printf(vars["name"])
 
-	if len(reqPar) < 3 {
+	if vars["name"] == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	switch reqPar[0] {
+	switch vars["type"] {
 	case "gauge":
-		currValue, err := strconv.ParseFloat(reqPar[2], 64)
+		currValue, err := strconv.ParseFloat(vars["value"], 64)
 		if err == nil {
-			MemStorage[reqPar[1]] = MemStruct{reqPar[0], currValue, 0}
+			MemStorage[vars["name"]] = MemStruct{vars["type"], currValue, 0}
 			w.WriteHeader(http.StatusOK)
 		} else {
 			w.WriteHeader(http.StatusBadRequest)
 		}
 	case "counter":
-		currValue, err := strconv.ParseInt(reqPar[2], 0, 64)
+		currValue, err := strconv.ParseInt(vars["value"], 0, 64)
 		if err == nil {
-			thisValue := MemStorage[reqPar[1]].counterValue
-			MemStorage[reqPar[1]] = MemStruct{reqPar[0], 0, currValue + thisValue}
+			thisValue := MemStorage[vars["name"]].counterValue
+			MemStorage[vars["name"]] = MemStruct{vars["type"], 0, currValue + thisValue}
 			w.WriteHeader(http.StatusOK)
 		} else {
 			w.WriteHeader(http.StatusBadRequest)
@@ -70,4 +65,40 @@ func UpdateHandle(w http.ResponseWriter, req *http.Request) {
 	default:
 		w.WriteHeader(http.StatusBadRequest)
 	}
+}
+
+func GetMetric(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("content-type", "text/plain")
+	vars := mux.Vars(req)
+	if val, ok := MemStorage[vars["name"]]; ok {
+		if val.metricType == vars["type"] {
+			switch val.metricType {
+			case "gauge":
+				w.Write([]byte(fmt.Sprint(val.gaugeValue)))
+			case "counter":
+				w.Write([]byte(fmt.Sprint(val.counterValue)))
+			default:
+				w.Write([]byte("something went wrong"))
+				w.WriteHeader(http.StatusNotFound)
+				panic("unsupported metric type")
+			}
+		}
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func GetAll(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("content-type", "text/plain")
+	body := "Current values: \n"
+	for k, v := range MemStorage {
+		switch v.metricType {
+		case "gauge":
+			body += fmt.Sprintf("%v = %v \n", k, v.gaugeValue)
+		case "counter":
+			body += fmt.Sprintf("%v = %v \n", k, v.counterValue)
+		}
+	}
+	w.Write([]byte(body))
 }
