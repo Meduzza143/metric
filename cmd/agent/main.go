@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"os"
 	"runtime"
 	"strconv"
 	"time"
@@ -92,14 +93,32 @@ func sender() {
 
 func main() {
 	fmt.Println("client_start")
-	senders.APIURL = "http://" + *flag.String("a", "localhost:8080", "endpont address:port")
-	reportInterval = *flag.Duration("r", 10*time.Second, "report interval in seconds")
-	pollInterval = *flag.Duration("p", 2*time.Second, "poll interval in seconds")
-
 	flag.Parse()
+
+	adr, ok := os.LookupEnv("ADDRESS")
+	if !ok {
+		adr = *flag.String("a", "localhost:8080", "endpont address:port")
+	}
+
+	repString, ok := os.LookupEnv("REPORT_INTERVAL")
+	if !ok {
+		reportInterval = *flag.Duration("r", 10*time.Second, "report interval in seconds")
+	} else {
+		reportInterval, _ = time.ParseDuration(repString)
+	}
+
+	pollString, ok := os.LookupEnv("POLL_INTERVAL")
+	if !ok {
+		pollInterval = *flag.Duration("p", 2*time.Second, "poll interval in seconds")
+	} else {
+		pollInterval, _ = time.ParseDuration(pollString)
+	}
+
+	senders.APIURL = "http://" + adr
 
 	go poller()
 	go sender()
+
 	for {
 		time.Sleep(500 * time.Second)
 	}

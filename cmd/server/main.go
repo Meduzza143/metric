@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"os"
 
 	handlers "github.com/Meduzza143/metric/cmd/server/internal"
 	"github.com/gorilla/mux"
@@ -16,7 +17,12 @@ type NetAddress struct {
 
 func main() {
 
-	ipAddr := flag.String("a", "localhost:8080", "address:port")
+	//ipAddr := flag.String("a", "localhost:8080", "address:port")
+
+	adr, ok := os.LookupEnv("ADDRESS")
+	if !ok {
+		adr = *flag.String("a", "localhost:8080", "endpont address:port")
+	}
 	flag.Parse()
 	//http://<АДРЕС_СЕРВЕРА>/update/<ТИП_МЕТРИКИ>/<ИМЯ_МЕТРИКИ>/<ЗНАЧЕНИЕ_МЕТРИКИ>
 	r := mux.NewRouter()
@@ -24,9 +30,9 @@ func main() {
 	r.HandleFunc(`/value/{type}/{name}`, handlers.GetMetric).Methods("GET")
 	r.HandleFunc(`/`, handlers.GetAll).Methods("GET")
 
-	fmt.Printf("starting server... at %v \n", *ipAddr)
+	fmt.Printf("starting server... at %v \n", adr)
 
-	err := http.ListenAndServe(*ipAddr, r)
+	err := http.ListenAndServe(adr, r)
 	if err != nil {
 		panic(err)
 	}
