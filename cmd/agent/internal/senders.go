@@ -6,12 +6,10 @@ import (
 	"net/http"
 )
 
-var APIURL string //= "http://127.0.0.1:8080/update"
+var APIURL string
 
 func SendData(value string, name string, valueType string) int {
-	//test mock:
-	//APIURL = "http://127.0.0.1:8080/update"
-	//var ret int = 0
+
 	finalURL := fmt.Sprintf("%s/%s/%s/%s", APIURL, valueType, name, value)
 	r := bytes.NewReader([]byte("test"))
 	resp, err := http.Post(finalURL, "text/plain", r)
@@ -22,7 +20,7 @@ func SendData(value string, name string, valueType string) int {
 		fmt.Println(resp)
 		retCode = resp.StatusCode
 	}
-	//resp.Body.Close()
+
 	defer resp.Body.Close()
 	return retCode
 }

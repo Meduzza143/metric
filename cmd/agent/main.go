@@ -93,23 +93,28 @@ func sender() {
 
 func main() {
 	fmt.Println("client_start")
+
+	flagAdrPtr := flag.String("a", "localhost:8080", "endpont address:port")
+	flagRepPtr := flag.Duration("r", 10*time.Second, "report interval in seconds")
+	flagPolPtr := flag.Duration("p", 2*time.Second, "poll interval in seconds")
+
 	flag.Parse()
 
 	adr, ok := os.LookupEnv("ADDRESS")
 	if !ok {
-		adr = *flag.String("a", "localhost:8080", "endpont address:port")
+		adr = *flagAdrPtr
 	}
 
 	repString, ok := os.LookupEnv("REPORT_INTERVAL")
 	if !ok {
-		reportInterval = *flag.Duration("r", 10*time.Second, "report interval in seconds")
+		reportInterval = *flagRepPtr
 	} else {
 		reportInterval, _ = time.ParseDuration(repString)
 	}
 
 	pollString, ok := os.LookupEnv("POLL_INTERVAL")
 	if !ok {
-		pollInterval = *flag.Duration("p", 2*time.Second, "poll interval in seconds")
+		pollInterval = *flagPolPtr
 	} else {
 		pollInterval, _ = time.ParseDuration(pollString)
 	}
