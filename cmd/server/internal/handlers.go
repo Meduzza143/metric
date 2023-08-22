@@ -78,15 +78,13 @@ func GetMetric(w http.ResponseWriter, req *http.Request) {
 			case "counter":
 				w.Write([]byte(fmt.Sprint(val.counterValue)))
 			default:
-				w.Write([]byte("something went wrong"))
 				w.WriteHeader(http.StatusNotFound)
-				panic("unsupported metric type")
 			}
 		}
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 	}
-	w.WriteHeader(http.StatusOK)
+
 }
 
 func GetAll(w http.ResponseWriter, req *http.Request) {
