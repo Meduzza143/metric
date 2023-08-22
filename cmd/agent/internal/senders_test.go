@@ -13,7 +13,7 @@ func TestSendData(t *testing.T) {
 		{
 			name:      "test_1",
 			value:     "55.12312",
-			valueType: "gauge1",
+			valueType: "gauge",
 			want:      200,
 		},
 		{
