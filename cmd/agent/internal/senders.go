@@ -20,7 +20,7 @@ func SendData(value string, name string, valueType string) int {
 		fmt.Println(resp)
 		retCode = resp.StatusCode
 	}
-	resp.Body.Close()
+	//resp.Body.Close()
 	defer resp.Body.Close()
 	return retCode
 }
