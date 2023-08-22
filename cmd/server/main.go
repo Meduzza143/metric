@@ -19,9 +19,12 @@ func main() {
 
 	adr, ok := os.LookupEnv("ADDRESS")
 	if !ok {
-		adr = *flag.String("a", "localhost:8080", "endpont address:port")
+		flagAdrPtr := flag.String("a", "localhost:8080", "endpont address:port")
+		flag.Parse()
+		adr = *flagAdrPtr
 	}
-	flag.Parse()
+
+	//flag.Parse()
 	//http://<АДРЕС_СЕРВЕРА>/update/<ТИП_МЕТРИКИ>/<ИМЯ_МЕТРИКИ>/<ЗНАЧЕНИЕ_МЕТРИКИ>
 	r := mux.NewRouter()
 	r.HandleFunc(`/update/{type}/{name}/{value}`, handlers.UpdateHandle).Methods("POST")
