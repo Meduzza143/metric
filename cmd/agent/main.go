@@ -13,6 +13,7 @@ import (
 	senders "github.com/Meduzza143/metric/cmd/agent/internal"
 )
 
+// a
 type MemStruct struct {
 	metricType string
 	value      string
