@@ -37,7 +37,7 @@ var MemStorage = make(map[string]MemStruct)
 func UpdateHandle(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("content-type", "text/plain")
 	vars := mux.Vars(req)
-	fmt.Printf(vars["name"])
+	//fmt.Printf(vars["name"])
 
 	if vars["name"] == "" {
 		w.WriteHeader(http.StatusNotFound)

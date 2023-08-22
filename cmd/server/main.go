@@ -17,8 +17,6 @@ type NetAddress struct {
 
 func main() {
 
-	//ipAddr := flag.String("a", "localhost:8080", "address:port")
-
 	adr, ok := os.LookupEnv("ADDRESS")
 	if !ok {
 		adr = *flag.String("a", "localhost:8080", "endpont address:port")
