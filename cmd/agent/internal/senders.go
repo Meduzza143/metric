@@ -13,13 +13,13 @@ func SendData(value string, name string, valueType string) int {
 	finalURL := fmt.Sprintf("%s/%s/%s/%s", APIURL, valueType, name, value)
 	r := bytes.NewReader([]byte("test"))
 	resp, err := http.Post(finalURL, "text/plain", r)
+	var retCode = -1
 	if err != nil {
 		fmt.Println(err)
-		return -1
 	} else {
 		fmt.Println(resp)
-		return resp.StatusCode
+		retCode = resp.StatusCode
 	}
-	//ret = resp.StatusCode
-
+	defer resp.Body.Close()
+	return retCode
 }
