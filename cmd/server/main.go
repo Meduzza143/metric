@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"os"
 
-	handlers "github.com/Meduzza143/metric/cmd/server/internal"
+	handlers "github.com/Meduzza143/metric/internal/server/handlers"
+	//router "github.com/Meduzza143/metric/internal/server/router"
 	"github.com/gorilla/mux"
 )
 

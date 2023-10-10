@@ -8,12 +8,13 @@ import (
 
 var APIURL string
 
-func SendData(value string, name string, valueType string) int {
+func SendData(value, name string, valueType string) (retCode int) {
 
-	finalURL := fmt.Sprintf("%s/%s/%s/%s", APIURL, valueType, name, value)
+	finalURL := fmt.Sprintf("%s/update/%s/%s/%s", APIURL, valueType, name, value)
 	r := bytes.NewReader([]byte("test"))
 	resp, err := http.Post(finalURL, "text/plain", r)
-	var retCode = -1
+	//var retCode = -1
+	retCode = 1
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -22,5 +23,6 @@ func SendData(value string, name string, valueType string) int {
 	}
 
 	defer resp.Body.Close()
-	return retCode
+	//return retCode
+	return
 }

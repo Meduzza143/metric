@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	senders "github.com/Meduzza143/metric/cmd/agent/internal"
+	senders "github.com/Meduzza143/metric/inetrnal/agent/senders"
 )
 
 // a
@@ -127,6 +127,7 @@ func main() {
 
 	for {
 		time.Sleep(500 * time.Second)
+		//select ()
 	}
 
 }
