@@ -1,4 +1,4 @@
-package senders
+package agent
 
 // func TestSendData(t *testing.T) {
 
