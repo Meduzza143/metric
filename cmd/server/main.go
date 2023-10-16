@@ -1,42 +1,21 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"net/http"
-	"os"
 
-	handlers "github.com/Meduzza143/metric/internal/server/handlers"
-	//router "github.com/Meduzza143/metric/internal/server/router"
-	"github.com/gorilla/mux"
+	server "github.com/Meduzza143/metric/internal/server"
+	config "github.com/Meduzza143/metric/internal/server/settings"
 )
 
-type NetAddress struct {
-	Host string
-	Port int
-}
-
 func main() {
+	conf := config.GetConfig()
+	r := server.Router()
 
-	adr, ok := os.LookupEnv("ADDRESS")
-	if !ok {
-		flagAdrPtr := flag.String("a", "localhost:8080", "endpont address:port")
-		flag.Parse()
-		adr = *flagAdrPtr
-	}
+	fmt.Printf("starting server... at %v \n", conf.Listen)
 
-	//flag.Parse()
-	//http://<АДРЕС_СЕРВЕРА>/update/<ТИП_МЕТРИКИ>/<ИМЯ_МЕТРИКИ>/<ЗНАЧЕНИЕ_МЕТРИКИ>
-	r := mux.NewRouter()
-	r.HandleFunc(`/update/{type}/{name}/{value}`, handlers.UpdateHandle).Methods("POST")
-	r.HandleFunc(`/value/{type}/{name}`, handlers.GetMetric).Methods("GET")
-	r.HandleFunc(`/`, handlers.GetAll).Methods("GET")
-
-	fmt.Printf("starting server... at %v \n", adr)
-
-	err := http.ListenAndServe(adr, r)
+	err := http.ListenAndServe(conf.Listen, r)
 	if err != nil {
 		panic(err)
 	}
-
 }

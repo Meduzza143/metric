@@ -5,37 +5,14 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/Meduzza143/metric/internal/server/storage"
 	"github.com/gorilla/mux"
 )
 
-// type value interface {
-// 	GetValue() interface{}
-// }
-// type int64Var struct{ value int64 }
-// type float64Var struct{ value float64 }
-// type stringVar struct{ value string }
-
-// func (v int64Var) GetValue() interface{} {
-// 	return v.value
-// }
-// func (v float64Var) GetValue() interface{} {
-// 	return v.value
-// }
-// func (v stringVar) GetValue() interface{} {
-// 	return v.value
-// }
-
-type MemStruct struct {
-	metricType string //gauge or counter
-	value      interface{}
-	//gaugeValue   float64
-	//counterValue int64
-}
-
-var MemStorage = make(map[string]MemStruct)
-
 // //http://<АДРЕС_СЕРВЕРА>/update/<ТИП_МЕТРИКИ>/<ИМЯ_МЕТРИКИ>/<ЗНАЧЕНИЕ_МЕТРИКИ>
 func UpdateHandle(w http.ResponseWriter, req *http.Request) {
+	//memStorage := storage.GetInstance()
+	memStorage := storage.GetInstance()
 	w.Header().Set("content-type", "text/plain")
 	vars := mux.Vars(req)
 
@@ -46,31 +23,27 @@ func UpdateHandle(w http.ResponseWriter, req *http.Request) {
 
 	switch vars["type"] {
 	case "gauge":
-		currValue, err := strconv.ParseFloat(vars["value"], 64)
+		_, err := strconv.ParseFloat(vars["value"], 64) //оставим проверку на тип
 		if err == nil {
-			MemStorage[vars["name"]] = MemStruct{vars["type"], currValue}
+			memStorage.SetValue(vars["name"], vars["type"], vars["value"])
 			w.WriteHeader(http.StatusOK)
 		} else {
 			w.WriteHeader(http.StatusBadRequest)
 		}
 	case "counter":
-		currValue, err := strconv.ParseInt(vars["value"], 0, 64)
-		if err == nil {
-			thisValue := MemStorage[vars["name"]].value
-			if thisValue == nil { //new value
-				MemStorage[vars["name"]] = MemStruct{vars["type"], currValue}
-			} else {
-				switch i := thisValue.(type) {
-				case int64:
-					MemStorage[vars["name"]] = MemStruct{vars["type"], currValue + i}
-				default:
-					w.WriteHeader(http.StatusBadRequest) //wrong counter type
-					return
-				}
+		_, err := strconv.ParseInt(vars["value"], 0, 64)
+		if err == nil { // new value
+			thisValue := memStorage.GetValue(vars["name"])
+			if (thisValue == storage.MemStruct{}) { //new value
+				memStorage.SetValue(vars["name"], vars["type"], vars["value"])
+			} else { //increase counter
+				currValue, _ := strconv.ParseInt(thisValue.Value, 0, 64)
+				currValue += 1
+				memStorage.SetValue(vars["name"], vars["type"], strconv.FormatInt(currValue, 10))
 			}
 			w.WriteHeader(http.StatusOK)
 		} else {
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusBadRequest) //wrong value type
 		}
 	default:
 		w.WriteHeader(http.StatusBadRequest)
@@ -79,33 +52,34 @@ func UpdateHandle(w http.ResponseWriter, req *http.Request) {
 
 func GetMetric(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("content-type", "text/plain")
+	memStorage := storage.GetInstance()
 	vars := mux.Vars(req)
-	if val, ok := MemStorage[vars["name"]]; ok {
-		if val.metricType == vars["type"] {
-			switch val.metricType {
-			case "gauge":
-				w.Write([]byte(fmt.Sprint(val.value)))
-			case "counter":
-				w.Write([]byte(fmt.Sprint(val.value)))
-			default:
-				w.WriteHeader(http.StatusNotFound)
-			}
+	val := memStorage.GetValue(vars["name"])
+	if val.MetricType == vars["type"] {
+		switch val.MetricType {
+		case "gauge", "counter":
+			w.Write([]byte(fmt.Sprint(val.Value)))
+		default:
+			w.WriteHeader(http.StatusNotFound)
 		}
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 	}
-
 }
 
 func GetAll(w http.ResponseWriter, req *http.Request) {
+	memStorage := storage.GetInstance()
 	w.Header().Set("content-type", "text/plain")
 	body := "Current values: \n"
-	for k, v := range MemStorage {
-		switch v.metricType {
+	fmt.Println(memStorage.GetAllValues())
+	for k, v := range memStorage.GetAllValues() {
+		// fmt.Printf("k[%v], v[%v]\n", k, v)
+		// fmt.Printf("metric type: %v\n", v.MetricType)
+		switch v.MetricType {
 		case "gauge":
-			body += fmt.Sprintf("%v = %v \n", k, v.value)
+			body += fmt.Sprintf("%v = %v \n", k, v.Value)
 		case "counter":
-			body += fmt.Sprintf("%v = %v \n", k, v.value)
+			body += fmt.Sprintf("%v = %v \n", k, v.Value)
 		}
 	}
 	w.Write([]byte(body))

@@ -4,20 +4,14 @@ import (
 	"math/rand"
 	"runtime"
 	"strconv"
+
+	"github.com/Meduzza143/metric/internal/agent/storage"
+	storage "github.com/Meduzza143/metric/internal/agent/storage"
 )
 
-// type MemStruct struct {
-// 	metricType string
-// 	value      string
-// }
-// type MemStorage map[string]MemStruct
-
-//	func NewStorage() (memStorage memStorage) {
-//		memStorage = make(map[string]MemStruct)
-//		return
-//	}
-func (storage MemStorage) Poll() {
+func (storage.MemStorage) Poll() {
 	var mem runtime.MemStats
+	storage.MemStorage["Alloc"] := storage.MemStruct{"gauge", uintToStr(mem.Alloc)}
 
 	runtime.ReadMemStats(&mem)
 	storage["Alloc"] = MemStruct{"gauge", uintToStr(mem.Alloc)}

@@ -6,7 +6,7 @@ type MemStruct struct {
 }
 type MemStorage map[string]MemStruct
 
-func NewStorage() (memStorage MemStorage) {
-	memStorage = make(map[string]MemStruct)
+func NewStorage() (storage MemStorage) {
+	storage = make(map[string]MemStruct)
 	return
 }

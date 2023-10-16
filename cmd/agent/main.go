@@ -11,7 +11,6 @@ func main() {
 	conf := config.GetConfig()
 	data := agent.NewStorage()
 
-	data.Poll()
 	reportTicker := time.NewTicker(conf.ReportInterval)
 	pollTicker := time.NewTicker(conf.PollInterval)
 
@@ -24,7 +23,7 @@ func main() {
 			}
 		case <-reportTicker.C:
 			{
-				data.Send(conf.Address)
+				data.Sender(conf.Address)
 				//fmt.Println("report triggered")
 			}
 		}
