@@ -23,7 +23,7 @@ func main() {
 			}
 		case <-reportTicker.C:
 			{
-				data.Sender(conf.Address)
+				data.Send(conf.Address)
 				//fmt.Println("report triggered")
 			}
 		}
