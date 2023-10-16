@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func (storage MemStorage) Send(url string) {
+func (storage MemStorage) Sender(url string) {
 	for k, v := range storage {
 		sendData(url, v.value, k, v.metricType)
 	}
