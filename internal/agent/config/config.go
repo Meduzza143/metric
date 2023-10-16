@@ -9,6 +9,7 @@ import (
 type Settings struct {
 	Address string
 	//port           string
+	//
 	PollInterval   time.Duration
 	ReportInterval time.Duration
 }
